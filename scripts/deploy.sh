@@ -29,6 +29,7 @@ append_option --drive-name "${USB_DRIVE_NAME:-}"
 append_option --glance-origin "${GLANCE_ORIGIN:-}"
 append_option --glance-origin "${GLANCE_EXTRA_ORIGIN:-}"
 append_option --port "${PANEL_PORT:-}"
+append_option --language "${PANEL_LANGUAGE:-}"
 remote_command='python3 /root/glance-backup-upload/scripts/install.py'
 single_quote="'"
 quote_escape="'\"'\"'"

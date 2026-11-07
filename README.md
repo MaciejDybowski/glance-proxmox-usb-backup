@@ -4,9 +4,20 @@ A small, self-hosted USB backup panel for **Proxmox VE**, designed to live insid
 
 Select VMs and containers, give each backup its own note, run the queue, and safely unmount the USB drive when everything is done. Existing archives remain visible after unplugging the drive through a clearly labelled, timestamped cached inventory.
 
-**[Try the live demo →](https://maciejdybowski.github.io/glance-proxmox-usb-backup/)** · Fictional data, simulated backups, no login or Proxmox connection. All changes stay in browser memory and reset on reload.
+**Live demo: [English](https://maciejdybowski.github.io/glance-proxmox-usb-backup/?lang=en) · [Polski](https://maciejdybowski.github.io/glance-proxmox-usb-backup/?lang=pl)** · Fictional data, simulated backups, no login or Proxmox connection. All changes stay in browser memory and reset on reload.
 
-![USB backup panel with fictional demo data](docs/images/panel-desktop.png)
+![English USB backup panel with fictional demo data](docs/images/panel-desktop-en.png)
+
+[Mobile preview — English](docs/images/panel-mobile-en.png)
+
+<details>
+<summary>Polski — desktop and mobile previews</summary>
+
+![Polski — panel backupów z fikcyjnymi danymi](docs/images/panel-desktop-pl.png)
+
+[Podgląd mobilny — Polski](docs/images/panel-mobile-pl.png)
+
+</details>
 
 ## Features
 
@@ -21,10 +32,11 @@ Select VMs and containers, give each backup its own note, run the queue, and saf
 - Backup jobs survive dashboard closure and panel service restarts.
 - HTTPS, a separate panel password, and server-side Proxmox operations. No Proxmox API token in the browser or Glance YAML.
 - Responsive layout and automatic iframe height in the full Glance example.
+- **English / Polish** UI, locale-aware dates/numbers, and a default language selected during installation.
 
 **Runtime:** Python standard library, native Proxmox tools, systemd. No Docker, pip packages, Node.js service, or database.
 
-The interface is currently in **Polish**. Installation/development documentation is in English. UI translation contributions are welcome. This is an independent community project, not an official Glance or Proxmox component.
+The interface supports **English and Polish**, including controls, status messages and application errors. Choose the default at installation, or switch languages in the panel/demo. Machine names, user-authored Notes and native Proxmox logs are not translated. Installation/development documentation is in English. This is an independent community project, not an official Glance or Proxmox component.
 
 ## Requirements
 
@@ -54,12 +66,14 @@ The original deployment was used on Proxmox VE 9.2 with exFAT. Automated tests m
 3. Install on the host, substituting your own values:
 
    ```bash
-   ssh -t root@PROXMOX_HOST 'python3 /root/glance-backup-upload/scripts/install.py --uuid YOUR-FILESYSTEM-UUID --storage usb-backup --filesystem exfat --drive-name "Backup USB" --glance-origin https://glance.example.test'
+   ssh -t root@PROXMOX_HOST 'python3 /root/glance-backup-upload/scripts/install.py --uuid YOUR-FILESYSTEM-UUID --storage usb-backup --filesystem exfat --drive-name "Backup USB" --language en --glance-origin https://glance.example.test'
    ```
 
 4. Open `https://PROXMOX_HOST:8765/`, trust the Proxmox certificate if necessary, and sign in using the separate password you set during installation.
 
 5. Integrate [examples/glance.yml](examples/glance.yml), setting `PROXMOX_BACKUP_URL` in Glance's environment. A minimal fixed-height include is also provided in [examples/glance-widget.yml](examples/glance-widget.yml).
+
+Omit `--language` on a first installation to choose interactively (`en` or `pl`). Upgrades preserve the configured language; original installations without a language setting retain Polish unless explicitly changed.
 
 For repeated deployments, copy `config/deploy.env.example` to **`local/deploy.env`**, edit it, then run:
 

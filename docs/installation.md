@@ -25,6 +25,8 @@ python3 scripts/install.py --settings /path/to/your/install-settings.json
 
 The installer validates the storage, UUID, mountpoint, origins, and filesystem before writing configuration. It prompts for a separate panel password, creates the service and UUID-specific mounting rule, and starts the service. It does **not** start a backup.
 
+Choose **English / Polski** when prompted for the panel language, or provide `--language en` / `--language pl`. The selection is stored in runtime configuration. Upgrading an older Polish-only installation keeps Polish unless a language is explicitly supplied.
+
 | Installed path | Purpose |
 | --- | --- |
 | `/opt/glance-backup/` | `server.py`, `worker.py`, static UI, password utility |

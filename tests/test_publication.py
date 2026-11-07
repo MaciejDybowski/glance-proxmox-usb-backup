@@ -30,11 +30,13 @@ class DemoBuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             directory = demo_builder.build(Path(temporary) / "site")
             self.assertEqual({path.name for path in directory.iterdir()},
-                             {"index.html", "panel.js", "panel.css", "demo.js", "demo.css", ".nojekyll"})
+                             {"index.html", "panel.js", "panel.css", "demo.js", "demo.css", "i18n.js", "messages.js", ".nojekyll"})
             page = (directory / "index.html").read_text()
             self.assertIn("FICTIONAL DATA", page)
             self.assertIn("connect-src 'none'", page)
-            self.assertLess(page.index('src="demo.js"'), page.index('src="panel.js"'))
+            self.assertLess(page.index('src="demo.js?'), page.index('src="panel.js?'))
+            self.assertLess(page.index('src="messages.js?'), page.index('src="i18n.js?'))
+            self.assertLess(page.index('src="i18n.js?'), page.index('src="demo.js?'))
             for asset in directory.iterdir():
                 content = asset.read_text()
                 self.assertNotIn("password_hash", content)

@@ -438,10 +438,12 @@ class HTTPTests(unittest.TestCase):
         cls.httpd.server_close()
         cls.thread.join()
 
-    def request(self, method, path, data=None, token=None, origin=True):
+    def request(self, method, path, data=None, token=None, origin=True, language=None):
         host = f"127.0.0.1:{self.httpd.server_port}"
         connection = http.client.HTTPConnection(host)
         headers = {"Content-Type": "application/json"}
+        if language:
+            headers["Accept-Language"] = language
         if token:
             headers["Authorization"] = f"Bearer {token}"
         if origin:
@@ -456,6 +458,25 @@ class HTTPTests(unittest.TestCase):
         status, _, headers = self.request("GET", "/api/status")
         self.assertEqual(status, 401)
         self.assertIn("frame-ancestors", headers["Content-Security-Policy"])
+
+    def test_api_errors_follow_selected_language(self):
+        status, body, headers = self.request("GET", "/api/status", language="en-GB")
+        self.assertEqual(status, 401)
+        self.assertEqual(json.loads(body)["error"], "Sign in to the panel.")
+        self.assertEqual(headers["Content-Language"], "en")
+        self.assertEqual(json.loads(self.request("GET", "/api/status", language="pl")[1])["error"], "Zaloguj się do panelu.")
+
+    def test_browser_language_config_contains_no_credentials_and_query_urls_work(self):
+        self.httpd.config["language"] = "en"
+        try:
+            status, body, _ = self.request("GET", "/messages.js")
+            self.assertEqual(status, 200)
+            self.assertIn(b'"language": "en"', body)
+            self.assertNotIn(self.config["password_hash"].encode(), body)
+            self.assertNotIn(self.config["session_secret"].encode(), body)
+            self.assertEqual(self.request("GET", "/?lang=pl")[0], 200)
+        finally:
+            self.httpd.config.pop("language", None)
 
     def test_login_and_authenticated_backup(self):
         status, body, _ = self.request("POST", "/api/login", {"password": "test-password-long"})

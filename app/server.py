@@ -20,6 +20,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
+from i18n import browser_script, language, payload
 
 VZDUMP_LOCK = "/var/run/vzdump.lock"
 
@@ -276,6 +277,7 @@ class Controller:
                 plan_path = self.directory / f"{job_id}.plan.json"
                 atomic_json(plan_path, {"node": self.node, "storage": self.storage, "uuid": self.uuid,
                                        "filesystem": self.config.get("filesystem", "exfat"),
+                                       "language": self.config.get("language", "pl"),
                                        "mountpoint": self.mountpoint, "state_dir": str(self.directory),
                                        "guests": self.job["guests"]})
             try:
@@ -433,9 +435,11 @@ class Handler(BaseHTTPRequestHandler):
         self.connection.settimeout(20)
 
     def respond(self, status, data, content_type="application/json; charset=utf-8"):
-        body = json.dumps(data, ensure_ascii=False).encode() if isinstance(data, (dict, list)) else data
+        selected_language = language(self.headers.get("Accept-Language"), language(self.server.config.get("language")))
+        body = json.dumps(payload(data, selected_language), ensure_ascii=False).encode() if isinstance(data, (dict, list)) else data
         self.send_response(status)
         self.send_header("Content-Type", content_type)
+        self.send_header("Content-Language", selected_language)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -452,16 +456,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            if self.path == "/api/status":
+            request_path = urlsplit(self.path).path
+            if request_path == "/api/status":
                 if not self.authorized():
                     return self.respond(401, {"error": "Zaloguj się do panelu."})
                 return self.respond(200, self.server.controller.snapshot())
+            if request_path == "/messages.js":
+                return self.respond(200, browser_script(self.server.config.get("language", "pl")), "text/javascript; charset=utf-8")
             assets = {"/": ("index.html", "text/html; charset=utf-8"),
                       "/panel.css": ("panel.css", "text/css; charset=utf-8"),
-                      "/panel.js": ("panel.js", "text/javascript; charset=utf-8")}
-            if self.path not in assets:
+                      "/panel.js": ("panel.js", "text/javascript; charset=utf-8"),
+                      "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8")}
+            if request_path not in assets:
                 return self.respond(404, {"error": "Nie znaleziono."})
-            name, content_type = assets[self.path]
+            name, content_type = assets[request_path]
             self.respond(200, (Path(__file__).parent / "static" / name).read_bytes(), content_type)
         except (PanelError, subprocess.TimeoutExpired, OSError, ValueError) as error:
             logging.exception("GET failed")

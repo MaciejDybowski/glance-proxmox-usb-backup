@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 
 from server import Controller, PanelError, backup_arguments
+from i18n import localize
 
 
 def run_plan(plan):
@@ -23,7 +24,7 @@ def run_plan(plan):
             if usb["free"] < 1024 ** 3:
                 raise PanelError("Na USB pozostało mniej niż 1 GiB.")
         except (PanelError, OSError, ValueError, subprocess.TimeoutExpired) as error:
-            print(f"ERROR: Backup of VM {vmid} failed - {error}", flush=True)
+            print(f"ERROR: Backup of VM {vmid} failed - {localize(str(error), plan.get('language', 'pl'))}", flush=True)
             return 1  # Never continue onto an absent or different device.
         try:
             # Native vzdump writes directly to the unit log and the Proxmox task history.
@@ -33,7 +34,7 @@ def run_plan(plan):
                 print(f"ERROR: Backup of VM {vmid} failed - vzdump exit {result.returncode}", flush=True)
                 failed = True
         except (PanelError, OSError) as error:
-            print(f"ERROR: Backup of VM {vmid} failed - {error}", flush=True)
+            print(f"ERROR: Backup of VM {vmid} failed - {localize(str(error), plan.get('language', 'pl'))}", flush=True)
             failed = True
     return 1 if failed else 0
 

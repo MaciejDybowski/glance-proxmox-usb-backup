@@ -6,6 +6,7 @@ test:
 check: test
 	python3 scripts/check.py
 	node --check app/static/panel.js
+	node --check app/static/i18n.js
 	node --check demo/demo.js
 	bash -n scripts/deploy.sh
 

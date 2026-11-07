@@ -1,6 +1,7 @@
 /* Fictional, in-memory simulator. No network requests or persistent storage. */
 (() => {
   const GiB = 1024 ** 3;
+  const t = (key, values) => window.HOMELAB_I18N.t(key, values);
   const baseTime = Date.UTC(2026, 10, 7, 12, 0, 0) / 1000;
   const machineData = [
     [200, 'smart-home', 'qemu', 24, 'running'],
@@ -34,9 +35,9 @@
       usb: { state: 'mounted', mounted: true, free: 81.4 * GiB, total: 128 * GiB },
       machines, job: null, monitor_error: null,
       backups: { cached: false, error: null, updated: baseTime,
-        items: [archive(machines[0], baseTime - 3600, 3.2 * GiB, 'smart-home - before a sample update'),
-          archive(machines[3], baseTime - 7200, 8.7 * GiB, 'cloud-files - demo baseline'),
-          archive(machines[4], baseTime - 86400, 1.4 * GiB, 'budget-sandbox - fictional test data')] }
+        items: [archive(machines[0], baseTime - 3600, 3.2 * GiB, `smart-home - ${t('demo_note_home')}`),
+          archive(machines[3], baseTime - 7200, 8.7 * GiB, `cloud-files - ${t('demo_note_cloud')}`),
+          archive(machines[4], baseTime - 86400, 1.4 * GiB, `budget-sandbox - ${t('demo_note_budget')}`)] }
     };
   }
 
@@ -50,14 +51,14 @@
   }
 
   function backup(data) {
-    if (busy()) throw new Error('Demo: poprzednie zadanie jeszcze trwa.');
-    if (!state.usb.mounted) throw new Error('Demo: najpierw zamontuj USB.');
+    if (busy()) throw new Error('demo_busy');
+    if (!state.usb.mounted) throw new Error('demo_mount_first');
     const ids = data?.vmids;
     if (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length
-      || ids.some(id => !state.machines.some(vm => vm.vmid === id))) throw new Error('Demo: wybierz poprawne maszyny.');
+      || ids.some(id => !state.machines.some(vm => vm.vmid === id))) throw new Error('demo_select');
     const notes = data.notes || {};
     if (ids.some(id => typeof (notes[id] || '') !== 'string' || (notes[id] || '').length > 500)) {
-      throw new Error('Demo: notatka może mieć maksymalnie 500 znaków.');
+      throw new Error('demo_notes_limit');
     }
     run++;
     const started = baseTime + run * 600;
@@ -105,7 +106,7 @@
       case '/api/backup': return backup(data);
       case '/api/mount':
       case '/api/eject': {
-        if (busy()) throw new Error('Demo: poczekaj na zakończenie kolejki.');
+        if (busy()) throw new Error('demo_wait');
         const mounted = path === '/api/mount';
         state.usb.mounted = mounted;
         state.usb.state = mounted ? 'mounted' : 'unmounted';
@@ -113,7 +114,7 @@
         if (!mounted && state.job?.phase === 'succeeded') state.job.eject = 'safe';
         return { message: 'Simulated USB state updated.' };
       }
-      default: throw new Error('Demo: ta operacja nie jest dostępna.');
+      default: throw new Error('demo_unavailable');
     }
   }
 

@@ -12,4 +12,4 @@ Do not add force/lazy unmount, automatic deletion of old backups, or browser-sid
 
 Bug reports are most useful with reproduction steps, expected/actual behavior, version information, and redacted logs. Never attach runtime `config.json`, session tokens, private keys, or actual financial/personal backup contents.
 
-The UI currently uses Polish text. A considered internationalization contribution is welcome; avoid a partial translation that changes only a few labels.
+The UI supports English and Polish through `app/static/translations.json`. Keep translation keys and interpolation fields aligned in both catalogs. Do not translate guest names, user Notes or native tool output. For UI changes, run the browser scenarios in both languages and refresh both sets of synthetic screenshots.

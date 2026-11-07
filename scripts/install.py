@@ -25,7 +25,15 @@ CONFIG_FILE = Path("/etc/glance-backup/config.json")
 STATE_DIR = Path("/var/lib/glance-backup")
 FILESYSTEMS = {"exfat", "ext4", "xfs"}
 SETTING_KEYS = {"uuid", "storage", "mountpoint", "filesystem", "drive_name", "listen", "port",
-                "glance_origins", "tls_cert", "tls_key"}
+                "glance_origins", "tls_cert", "tls_key", "language"}
+
+
+def select_language(value=None, upgrading=False):
+    if value is None:
+        value = "pl" if upgrading else input("Panel language / Język panelu [en/pl] (en): ").strip().lower() or "en"
+    if value not in {"en", "pl"}:
+        raise ValueError("Panel language must be en or pl / Język panelu: en lub pl.")
+    return value
 
 
 def run(*args):
@@ -36,6 +44,7 @@ def run(*args):
 
 
 def validate_settings(settings):
+    select_language(settings.get("language", "en"))
     if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,127}", settings["uuid"])
             or settings["uuid"].startswith("REPLACE")):
         raise ValueError("Use the filesystem UUID from lsblk -f (not a device name).")
@@ -100,6 +109,7 @@ def main():
     parser.add_argument("--mountpoint")
     parser.add_argument("--filesystem", choices=sorted(FILESYSTEMS))
     parser.add_argument("--drive-name")
+    parser.add_argument("--language", choices=["en", "pl"], help="Default panel language (selected interactively on first install)")
     parser.add_argument("--glance-origin", action="append", default=[])
     parser.add_argument("--listen")
     parser.add_argument("--port", type=int)
@@ -126,6 +136,7 @@ def main():
     existing = json.loads(CONFIG_FILE.read_text()) if CONFIG_FILE.exists() else None
     config = dict(existing or {})
     config.update(supplied)
+    config["language"] = select_language(config.get("language"), upgrading=existing is not None)
     config.setdefault("storage", "usb-backup")
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", config["storage"]):
         raise SystemExit("Invalid storage ID.")
@@ -177,7 +188,7 @@ def main():
     CONFIG_FILE.parent.chmod(0o700)
     STATE_DIR.chmod(0o700)
     atomic_json(CONFIG_FILE, config)
-    for name in ("server.py", "worker.py"):
+    for name in ("server.py", "worker.py", "i18n.py"):
         shutil.copy2(PROJECT_ROOT / "app" / name, DESTINATION / name)
     shutil.copy2(PROJECT_ROOT / "scripts/change-password.py", DESTINATION / "change-password.py")
     shutil.copytree(PROJECT_ROOT / "app/static", DESTINATION / "static", dirs_exist_ok=True)

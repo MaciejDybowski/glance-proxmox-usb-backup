@@ -11,6 +11,7 @@
 | `mountpoint` / `--mountpoint` | Must match that storage's path; detected from storage if omitted |
 | `filesystem` / `--filesystem` | `exfat`, `ext4`, or `xfs`; detected on a connected drive if omitted |
 | `drive_name` / `--drive-name` | Display label only; default `USB backup` |
+| `language` / `--language` | Default panel language: `en` or `pl`; interactive on first install when omitted |
 | `glance_origins` / repeat `--glance-origin` | Allowed embedding origins, without paths |
 | `listen` / `--listen` | IPv4 bind address; default `0.0.0.0` |
 | `port` / `--port` | HTTPS port; default `8765` |
@@ -23,6 +24,14 @@ An empty origin list permits only same-origin embedding. Explicitly configure th
 The installer writes `/etc/glance-backup/config.json` as root-only JSON. It also records the local Proxmox node and `/var/lib/glance-backup` state directory. Do not commit this file or copy it into public examples: it contains authentication material.
 
 The display label is supplied to the browser through the authenticated API; there is no hardcoded drive name in the public UI. Older installations without a filesystem setting retain exFAT behavior.
+
+## Interface language
+
+First-time installation asks for the panel language unless `--language en|pl` or a `language` setting was supplied. New installations default to English when the prompt is left empty. Upgrades retain the previous choice; legacy configurations without this field stay Polish. To change the installed default, rerun the installer with `--language en` or `--language pl`, or set `PANEL_LANGUAGE` in your private deployment settings.
+
+The panel and demo have an EN/PL selector that updates labels, application errors, dates and numbers immediately, preserving selected machines and note drafts. This browser override is reflected in `?lang=en` or `?lang=pl`, without writing browser storage or changing the server default. A parent iframe recreated without that query returns to the installed default.
+
+The shared catalog is `app/static/translations.json`. A generated `messages.js` exposes only translations and the language, never runtime authentication data. API requests send `Accept-Language`; recognized application errors are localized, while native tool output, guest names, Notes, archive filenames and technical logs remain untouched.
 
 ## Notes
 

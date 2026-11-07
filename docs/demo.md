@@ -2,7 +2,7 @@
 
 The live demo is intended for GitHub Pages:
 
-https://maciejdybowski.github.io/glance-proxmox-usb-backup/
+[English](https://maciejdybowski.github.io/glance-proxmox-usb-backup/?lang=en) · [Polski](https://maciejdybowski.github.io/glance-proxmox-usb-backup/?lang=pl)
 
 It reuses the real panel's HTML/CSS/JavaScript and injects a separate, **fictional in-memory transport**. The installed production service does not serve the simulator and continues to use its authenticated API.
 
@@ -13,6 +13,7 @@ It reuses the real panel's HTML/CSS/JavaScript and injects a separate, **fiction
 - Interactive per-machine Notes, a timed simulated queue, newly created example archives, mount/eject, and reset.
 - No Proxmox calls, filesystem operations, browser storage persistence, telemetry, or external assets.
 - A visible demo banner and log markers distinguish simulation from real operations.
+- EN/PL selector, localized labels/errors and dates/numbers; default English with a shareable `?lang=en|pl` override.
 - A `connect-src 'none'` Content Security Policy prevents network API calls from the demo.
 
 All notes entered into the demo exist only in the current browser tab's memory. Reload or use **Resetuj demo** to restore the sample data.
@@ -24,7 +25,7 @@ python3 scripts/build-demo.py
 python3 -m http.server 8080 --directory dist/demo
 ```
 
-Open `http://localhost:8080/`. The generated site consists of exactly six static files. The build reads only `app/static` and `demo`; it does not read `local/`, installed runtime configuration, archive inventories, or logs.
+Open `http://localhost:8080/`. The generated site consists of exactly eight static files, including the shared translation catalog wrapped as JavaScript. The build reads only source UI/catalog files and the simulator; it does not read `local/`, installed runtime configuration, archive inventories, or logs.
 
 ## GitHub Pages
 
@@ -40,4 +41,4 @@ For a fork, update the repository link in `scripts/build-demo.py` and the live-d
 npm run test:demo
 ```
 
-The browser scenario serves the generated site beneath a repository-like subpath and verifies simulated backups, independent Notes, cached archive inventory, reset, mobile layout, absence of API requests, and absence of stored credentials.
+The browser scenario runs in both EN and PL beneath a repository-like subpath and verifies language changes without losing draft Notes, simulated backups, cached archive inventory, reset, mobile layout, absence of API requests, and absence of stored credentials.

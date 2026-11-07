@@ -5,47 +5,56 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 
 const root = path.join(process.cwd(), 'dist/demo');
+const catalog = JSON.parse(await readFile(path.join(process.cwd(), 'app/static/translations.json'), 'utf8'));
 const prefix = '/glance-proxmox-usb-backup/';
 const files = { 'index.html': 'text/html; charset=utf-8', 'panel.js': 'text/javascript',
-  'panel.css': 'text/css', 'demo.js': 'text/javascript', 'demo.css': 'text/css' };
+  'panel.css': 'text/css', 'demo.js': 'text/javascript', 'demo.css': 'text/css', 'i18n.js':'text/javascript', 'messages.js':'text/javascript' };
 const server = createServer(async (req, res) => {
   if (!req.url.startsWith(prefix)) { res.writeHead(404); res.end(); return; }
-  const name = req.url.slice(prefix.length) || 'index.html';
+  const name = new URL(req.url, 'http://localhost').pathname.slice(prefix.length) || 'index.html';
   if (!files[name]) { res.writeHead(404); res.end(); return; }
   res.setHeader('Content-Type', files[name]);
   res.end(await readFile(path.join(root, name)));
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const browser = await chromium.launch({ ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}), headless: true });
+try {
+for (const language of ['en','pl']) {
+const tr = key => catalog.ui[language][key];
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const requests = [];
 const errors = [];
 page.on('request', request => requests.push(request.url()));
 page.on('pageerror', error => errors.push(error.message));
 try {
-  await page.goto(`http://127.0.0.1:${server.address().port}${prefix}`);
+  await page.goto(`http://127.0.0.1:${server.address().port}${prefix}?lang=${language}`);
   await page.locator('.machine').first().waitFor();
   assert.equal(await page.locator('#login').isVisible(), false);
   assert.equal(await page.locator('.machine').count(), 6);
   assert.equal(await page.locator('.archive-item').count(), 3);
+  assert.equal(await page.locator('html').getAttribute('lang'),language);
+  assert.equal(await page.locator('.demo-kicker').textContent(),tr('demo_kicker'));
   await page.locator('.machine input[value="200"]').check();
   await page.locator('.machine input[value="230"]').check();
   await page.locator('#notes-200').fill('Demo note for smart home');
   await page.locator('#notes-230').fill('Independent demo note for budget');
+  await page.locator('#language').selectOption(language==='en'?'pl':'en');
+  assert.equal(await page.locator('#notes-230').inputValue(),'Independent demo note for budget');
+  await page.locator('#language').selectOption(language);
   await page.locator('#start').click();
-  await page.getByRole('heading', { name: 'Trwa backup', exact: true }).waitFor();
+  await page.getByRole('heading', { name: tr('job_running'), exact: true }).waitFor();
   assert.equal(await page.locator('#eject').isDisabled(), true);
-  await page.getByText('USB odmontowane po backupie. Można bezpiecznie wyjąć pendrive.', { exact: true }).waitFor({ timeout: 10000 });
+  await page.getByText(tr('ejected'), { exact: true }).waitFor({ timeout: 10000 });
   assert.equal(await page.locator('.archive-item').count(), 5);
-  assert.match(await page.locator('#archive-status').textContent(), /lista z pamięci/);
+  assert.ok((await page.locator('#archive-status').textContent()).includes(language==='en'?'cached inventory':'lista z pamięci'));
   assert.deepEqual(await page.locator('.job-guest-note').allTextContents(), ['Demo note for smart home', 'Independent demo note for budget']);
   assert.ok((await page.locator('.archive-note').allTextContents()).includes('smart-home - Demo note for smart home'));
   assert.ok((await page.locator('.archive-note').allTextContents()).includes('budget-sandbox - Independent demo note for budget'));
   await page.locator('#mount').click();
-  await page.getByText('Ostatni backup zakończony. Pendrive jest ponownie zamontowany.', { exact: true }).waitFor();
+  await page.getByText(tr('remounted'), { exact: true }).waitFor();
   assert.equal(await page.locator('#eject').isEnabled(), true);
   await page.locator('#eject').click();
-  await page.getByText('Można bezpiecznie wyjąć pendrive.', { exact: true }).waitFor();
+  await page.getByText(tr('eject_done'), { exact: true }).waitFor();
   await page.locator('#logout').click();
   await page.waitForFunction(() => document.querySelectorAll('.archive-item').length === 3 && document.querySelector('#job').hidden);
   assert.equal(await page.locator('.machine input:checked').count(), 0);
@@ -60,9 +69,10 @@ try {
   assert.ok(!requests.some(url => url.includes('/api/')), requests.join('\n'));
   assert.deepEqual(errors, []);
   await mkdir('test-results', { recursive: true });
-  await page.screenshot({ path: 'test-results/demo-mobile.png', fullPage: true });
-  console.log('Demo OK: repository subpath, fictional inventory, per-guest notes, simulated queue/eject/mount, reset, mobile, no API calls or persisted credentials.');
+  await page.screenshot({ path: `test-results/demo-mobile-${language}.png`, fullPage: true });
+  console.log(`Demo ${language} OK: translated UI, language switch, simulated queue/eject/mount, reset, mobile, no API calls or stored credentials.`);
 } finally {
-  await browser.close();
-  server.close();
+  await page.close();
 }
+}
+} finally { await browser.close(); server.close(); }

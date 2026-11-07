@@ -9,7 +9,10 @@ h1, h2, p { margin: 0; }
 .eyebrow, .mono, .tag, .drive-info > span, .machine-id, .machine-meta, .backup-state { font-family: "SFMono-Regular", Consolas, monospace; }
 .eyebrow { color: var(--blue); font-size: 10px; letter-spacing: .14em; margin-bottom: 6px; }
 h1 { font-family: "Avenir Next", "Segoe UI", sans-serif; font-size: clamp(20px, 2vw, 24px); letter-spacing: -.04em; line-height: 1.25; font-weight: 600; }
-h1 span { color: var(--mint); }
+h1 > span:last-child { color: var(--mint); }
+.heading-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.language-control { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+.language-control select { border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--ink); font: inherit; padding: 5px 7px; }
 .subtitle { color: var(--muted); font-size: 12px; margin-top: 6px; }
 .tag { color: var(--blue); border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px; font-size: 10px; letter-spacing: .05em; }
 .drive { padding: 18px; border: 1px solid var(--border); border-bottom: 0; border-radius: 10px 10px 0 0; background: var(--bg); }
