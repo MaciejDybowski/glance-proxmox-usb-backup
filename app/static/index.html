@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backup na USB · Homelab</title>
+  <link rel="stylesheet" href="panel.css">
+  <script src="panel.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="heading">
+      <div><p class="eyebrow">KOPIA POZA HOSTEM</p><h1>Backup na USB<span>.</span></h1>
+        <p class="subtitle">Wybierz maszyny. Resztą zajmie się Proxmox.</p></div>
+      <span class="tag">SNAPSHOT / ZSTD</span>
+    </header>
+
+    <form id="login" class="login">
+      <label for="password">Hasło panelu backupów</label>
+      <div class="login-fields"><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+        <button type="submit">Odblokuj panel ↗</button></div>
+      <p class="hint">Osobne hasło ustawione podczas instalacji. Sesja trwa 12 godzin.</p>
+    </form>
+
+    <div id="dashboard" hidden>
+      <section class="drive" aria-label="Pendrive">
+        <div class="drive-icon" aria-hidden="true">⇅</div>
+        <div class="drive-info"><strong id="drive-name">USB backup</strong><span class="mono">USB / <span id="uuid">—</span></span></div>
+        <div class="drive-capacity"><strong id="capacity">—</strong><span id="usb-status">Sprawdzanie…</span></div>
+      </section>
+      <progress id="space" max="100" value="0" aria-label="Zajęte miejsce na USB"></progress>
+
+      <form id="backup-form">
+        <div class="section-heading"><h2>Maszyny do zapisania</h2>
+          <button id="toggle-all" type="button" class="text-button">Zaznacz wszystkie</button></div>
+        <div id="machines" class="machines"></div>
+        <div class="selection"><span id="selection-count">Nie wybrano maszyn</span>
+          <span id="disk-size" class="mono"></span></div>
+        <p class="hint">Przydział dysków głównych to nie rozmiar backupu. Dodatkowe dyski, zajęte dane, kompresja i wyłączenia z backupu wpływają na wynik.</p>
+        <p class="hint notes-hint">Przy każdej zaznaczonej maszynie możesz wpisać osobną notatkę. Notes: nazwa-maszyny - Twój wpis, maks. 500 znaków na kopię.</p>
+        <div class="actions">
+          <label class="eject-option"><input id="auto-eject" type="checkbox" checked> Odmontuj USB po udanym backupie</label>
+          <div class="buttons"><button id="start" type="submit" disabled>Wykonaj backup <span aria-hidden="true">↗</span></button>
+            <button id="mount" type="button" class="secondary" disabled hidden>Zamontuj USB</button>
+            <button id="eject" type="button" class="secondary" disabled>Odłącz USB</button></div>
+        </div>
+      </form>
+
+      <section id="job" class="job" hidden aria-label="Ostatnie zadanie">
+        <div class="section-heading"><h2 id="job-title">Ostatnie zadanie</h2><span id="job-count" class="mono"></span></div>
+        <progress id="job-progress" max="1" value="0" aria-label="Ukończone backupy maszyn"></progress>
+        <ul id="job-guests" class="job-guests"></ul>
+        <p id="job-result" role="status"></p>
+        <button id="acknowledge" type="button" class="secondary" hidden>Sprawdź zadanie i odblokuj panel</button>
+        <details><summary>Log zadania</summary><pre id="logs" tabindex="0"></pre></details>
+      </section>
+      <section class="archive" aria-label="Backupy zapisane na pendrivie">
+        <div class="section-heading"><h2>Kopie na pendrivie</h2><span id="archive-count" class="mono"></span></div>
+        <p id="archive-status" class="hint" role="status"></p>
+        <p id="archive-error" class="error" role="status" hidden></p>
+        <div id="archive-content" hidden>
+          <div class="archive-columns" aria-hidden="true"><span>Maszyna / plik</span><span>Utworzono</span><span>Rozmiar</span><span>Notes</span></div>
+          <ul id="archive-list" class="archive-list" tabindex="0" aria-label="Lista zapisanych backupów"></ul>
+          <p class="hint archive-hint">Od najnowszej kopii. Notes: podgląd pierwszej linii z Proxmoxa.</p>
+        </div>
+        <p id="archive-empty" class="hint"></p>
+      </section>
+      <footer><span>Starsze kopie pozostają na USB.</span><button id="logout" type="button" class="text-button">Zablokuj panel</button></footer>
+    </div>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

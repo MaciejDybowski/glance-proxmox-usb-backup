@@ -1,0 +1,17 @@
+{
+  "name": "glance-proxmox-usb-backup",
+  "version": "2026.11.0",
+  "private": true,
+  "description": "Optional browser tests for the Glance Proxmox USB Backup panel; no Node.js runtime dependency.",
+  "license": "MIT",
+  "scripts": {
+    "test:browser": "node tests/browser.mjs",
+    "test:demo": "python3 scripts/build-demo.py && node tests/demo-browser.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

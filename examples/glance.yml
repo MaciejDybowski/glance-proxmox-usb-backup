@@ -1,0 +1,41 @@
+theme:
+  background-color: 220 27 12
+  primary-color: 213 72 75
+  positive-color: 161 48 65
+  negative-color: 350 80 70
+
+document:
+  head: |
+    <style>
+      .usb-backup-panel { border: 1px solid #344256; border-radius: 12px; overflow: hidden; background: #1d2939; }
+      .usb-backup-panel iframe { width: 100%; height: 420px; border: 0; display: block; }
+      .usb-backup-help { padding: 12px 20px; border-top: 1px solid #344256; font-size: 12px; }
+      .usb-backup-help a { color: #91bafa; }
+    </style>
+    <script>
+      window.addEventListener('message', event => {
+        if (event.data?.type !== 'homelab-backup-height' || !Number.isFinite(event.data.height)) return;
+        document.querySelectorAll('.usb-backup-panel iframe').forEach(frame => {
+          if (event.source === frame.contentWindow && event.origin === new URL(frame.src).origin) {
+            frame.style.height = `${Math.max(360, Math.min(4000, Math.ceil(event.data.height)))}px`;
+          }
+        });
+      });
+    </script>
+
+pages:
+  - name: Proxmox
+    columns:
+      - size: full
+        widgets:
+          - type: html
+            source: |
+              <section class="widget usb-backup-panel" aria-label="Proxmox USB backups">
+                <iframe src="${PROXMOX_BACKUP_URL}" title="Proxmox USB backup panel"
+                  loading="lazy" referrerpolicy="no-referrer"
+                  sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+                <div class="usb-backup-help">
+                  <a href="${PROXMOX_BACKUP_URL}" target="_blank" rel="noopener noreferrer">Open panel separately ↗</a>
+                  · Open this link first if your browser needs to trust the certificate.
+                </div>
+              </section>

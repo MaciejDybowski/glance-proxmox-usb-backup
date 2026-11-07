@@ -1,0 +1,14 @@
+body { background: #141e2c; }
+.demo-banner, .demo-app { max-width: 1480px; margin-inline: auto; }
+.demo-banner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; padding: 26px 20px 22px; }
+.demo-kicker { color: var(--mint); font: 11px "SFMono-Regular", Consolas, monospace; letter-spacing: .1em; margin-bottom: 7px; }
+.demo-banner h2 { color: var(--ink); font-size: clamp(18px, 3vw, 24px); font-weight: 600; letter-spacing: -.03em; }
+.demo-banner p { color: var(--muted); font-size: 12px; margin-top: 7px; max-width: 75ch; }
+.demo-link { display: inline-block; color: var(--blue); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; text-decoration: none; font-size: 12px; }
+.demo-link:hover { border-color: var(--blue); }
+main.demo-app { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); width: calc(100% - 40px); margin-bottom: 30px; }
+.demo-footer { padding: 0 20px 24px; text-align: center; color: var(--muted); font-size: 11px; }
+@media (max-width: 560px) {
+  .demo-banner { padding: 20px 16px; }
+  main.demo-app { width: calc(100% - 24px); }
+}

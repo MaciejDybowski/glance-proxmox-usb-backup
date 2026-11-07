@@ -1,0 +1,19 @@
+[Unit]
+Description=Glance Proxmox USB Backup
+After=pve-cluster.service pvedaemon.service network.target
+Requires=pve-cluster.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/glance-backup
+ExecStart=/usr/bin/python3 /opt/glance-backup/server.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+# Keep the host mount namespace: do not enable PrivateMounts, PrivateDevices,
+# PrivateTmp or ProtectSystem. Backups run in independent transient units.
+
+[Install]
+WantedBy=multi-user.target

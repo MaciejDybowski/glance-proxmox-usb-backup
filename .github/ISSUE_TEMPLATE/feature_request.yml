@@ -1,0 +1,10 @@
+name: Feature request
+description: Describe a use case or improvement.
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: What would you like to accomplish?
+      description: Describe the workflow and why the current behavior does not cover it.
+    validations:
+      required: true
